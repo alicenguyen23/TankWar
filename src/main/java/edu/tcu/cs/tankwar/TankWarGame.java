@@ -1,30 +1,31 @@
 package edu.tcu.cs.tankwar;
 
+import edu.tcu.cs.tankwar.constants.Common;
+import edu.tcu.cs.tankwar.model.TankModel;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 
 public class TankWarGame extends Application {
-    private static final int WINDOW_WIDTH = 800;
-    private static final int WINDOW_HEIGHT = 600;
     private Canvas gameCanvas; /* for graphics/game rendering */
     private GraphicsContext gc;
-    private long lastUpdate = 0;
+    private final long lastUpdate = 0;
+    /* Create a tank object at the bottom center of the canvas */
+    private final TankModel playerTankModel = new TankModel(Common.WINDOW_WIDTH /2.0, Common.WINDOW_HEIGHT - Common.WINDOW_BOTTOM_OFFSET);
 
     @Override
     public void start(Stage stage) {
         /* Create a canvas to display game */
-        gameCanvas = new Canvas(WINDOW_WIDTH, WINDOW_HEIGHT);
+        gameCanvas = new Canvas(Common.WINDOW_WIDTH, Common.WINDOW_HEIGHT);
         gc = gameCanvas.getGraphicsContext2D();
 
         /* Create a container for the canvas */
         StackPane root = new StackPane(gameCanvas);
-        Scene scene = new Scene(root, WINDOW_WIDTH, WINDOW_HEIGHT);
+        Scene scene = new Scene(root, Common.WINDOW_WIDTH, Common.WINDOW_HEIGHT);
 
         /* Game loop (continuously check for any object update) */
         AnimationTimer gameLoop = new AnimationTimer() {
@@ -42,7 +43,7 @@ public class TankWarGame extends Application {
         };
 
         /* Set up stage */
-        stage.setTitle("Tank War Game");
+        stage.setTitle(Common.TITLE);
         stage.setScene(scene);
         stage.show();
 
@@ -52,14 +53,16 @@ public class TankWarGame extends Application {
     }
 
     private void update(double deltaTime) {
-        // TODO: Update game objects
+        /* TODO: Update game objects */
+        playerTankModel.update(deltaTime);
     }
 
     private void render() {
-        // Clear the canvas
-        gc.clearRect(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
+        /* Clear the canvas */
+        gc.clearRect(0, 0, Common.WINDOW_WIDTH, Common.WINDOW_HEIGHT);
 
-        // TODO: Render game objects
+        /* TODO: Render game objects */
+        playerTankModel.render(gc);
     }
 
     public static void main(String[] args) {

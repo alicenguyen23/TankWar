@@ -8,8 +8,8 @@ public final class Tank {
   public static final int TANK_MAX_HEALTH = 100;
   public static final int TANK_MIN_HEALTH = 100;
   public static final double TANK_ROTATION = 0;
-  public static final double TANK_WIDTH = 20.0;
-  public static final double TANK_HEIGHT = 30.0;
+  public static final double TANK_WIDTH = 30.0;
+  public static final double TANK_HEIGHT = 40.0;
 
   /* Tank colors */
   public static final Color LIGHT_GREEN = Color.web("#4CAF50");
@@ -18,8 +18,8 @@ public final class Tank {
   public static final Color GRAY =  Color.GRAY;
 
   /* Track */
-  public static final double TRACK_WIDTH = 5.0;
-  public static final double TRACK_OFFSET = 10.0;
+  public static final double TRACK_WIDTH = 8.0;
+  public static final double TRACK_OFFSET = 13.0;
   public static final int TRACK_SEGMENTS = 5;
 
   /* Cannon */

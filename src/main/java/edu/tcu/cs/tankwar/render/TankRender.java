@@ -4,7 +4,7 @@ import edu.tcu.cs.tankwar.constants.Tank;
 import edu.tcu.cs.tankwar.model.TankModel;
 import javafx.scene.canvas.GraphicsContext;
 
-import static edu.tcu.cs.tankwar.utils.Pixel.snapToPixel;
+import static edu.tcu.cs.tankwar.utils.PixelUtil.snapToPixel;
 
 public class TankRender {
 
@@ -25,7 +25,7 @@ public class TankRender {
     double trackWidth = snapToPixel(Tank.TRACK_WIDTH, pixelSize);
     double trackHeight = snapToPixel(tankModel.getHeight() + Tank.TRACK_OFFSET, pixelSize);
     gc.setFill(Tank.GRAY);
-    // Tracks with segments
+    /* Tracks with segments */
     for (int i = 0; i < Tank.TRACK_SEGMENTS; i++) {
       double segmentHeight = trackHeight / Tank.TRACK_SEGMENTS;
       double yOffset = -trackHeight / 2 + i * segmentHeight;

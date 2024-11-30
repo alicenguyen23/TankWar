@@ -1,10 +1,12 @@
 package edu.tcu.cs.tankwar.model;
 
+import edu.tcu.cs.tankwar.constants.Common;
 import edu.tcu.cs.tankwar.constants.Tank;
 import edu.tcu.cs.tankwar.render.TankRender;
+import javafx.geometry.Point2D;
 import javafx.scene.canvas.GraphicsContext;
 
-public class TankModel extends GameObject {
+public class TankModel extends GameObjectModel {
   private final double speed = Tank.TANK_SPEED;
   private double rotation = Tank.TANK_ROTATION;
   private int health = Tank.TANK_MAX_HEALTH;
@@ -24,14 +26,23 @@ public class TankModel extends GameObject {
   }
 
   /* Movement methods */
-  public void move(double deltaTime) {
-    double dx = Math.cos(Math.toRadians(rotation)) * speed * deltaTime;
-    double dy = Math.sin(Math.toRadians(rotation)) * speed * deltaTime;
-    position = position.add(dx, dy);
+  public void move(double dx, double dy) {
+    /* Calculate new position */
+    double newX = position.getX() + dx;
+    double newY = position.getY() + dy;
+
+    /* Check screen boundaries -> update position if within */
+    if (newX >= 0 && newX + width <= Common.WINDOW_WIDTH &&
+            newY >= 0 && newY + height <= Common.WINDOW_HEIGHT) {
+      position = new Point2D(newX, newY);
+    }
   }
 
   public void rotate(double deg) {
     rotation += deg;
+    /* Keep rotation between 0 and 360 degrees */
+    rotation = rotation % 360;
+    if (rotation < 0) rotation += 360;
   }
 
   /* Getters and setters */

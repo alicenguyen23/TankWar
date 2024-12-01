@@ -2,7 +2,10 @@ package edu.tcu.cs.tankwar;
 
 import edu.tcu.cs.tankwar.constants.Common;
 import edu.tcu.cs.tankwar.constants.Tank;
+import edu.tcu.cs.tankwar.constants.Wall;
+import edu.tcu.cs.tankwar.controller.GameController;
 import edu.tcu.cs.tankwar.model.TankModel;
+import edu.tcu.cs.tankwar.model.WallModel;
 import edu.tcu.cs.tankwar.utils.TimeUtil;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
@@ -12,12 +15,13 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class TankWarGame extends Application {
     private Canvas gameCanvas; /* for graphics/game rendering */
     private GraphicsContext gc;
     private long lastUpdate = System.nanoTime();
-    /* Create a tank object at the bottom center of the canvas */
-    private final TankModel playerTank = new TankModel(Common.WINDOW_WIDTH/2.0, Common.WINDOW_HEIGHT - Common.WINDOW_BOTTOM_OFFSET);
     /* Movement control */
     private boolean wPressed = false; /* Move forward */
     private boolean sPressed = false; /* Move backward */
@@ -26,6 +30,8 @@ public class TankWarGame extends Application {
     private boolean qPressed = false; /* Rotate left */
     private boolean ePressed = false; /* Rotate right */
     private boolean spacePressed = false; /* Shoot missiles */
+    /* Game controller */
+    private GameController gameController = GameController.getInstance();
 
     @Override
     public void start(Stage stage) {
@@ -51,6 +57,13 @@ public class TankWarGame extends Application {
                 lastUpdate = currentNanoTime;
             }
         };
+
+        /* Create a tank object at the bottom center of the canvas */
+        TankModel playerTank = new TankModel(Common.WINDOW_WIDTH/2.0, Common.WINDOW_HEIGHT - Common.WINDOW_BOTTOM_OFFSET, true);
+        gameController.setPlayerTank(playerTank);
+
+        /* Initialize walls */
+        initializeWalls();
 
         /* Set up stage */
         stage.setTitle(Common.TITLE);
@@ -92,17 +105,42 @@ public class TankWarGame extends Application {
         return scene;
     }
 
+    private void initializeWalls() {
+        /* Create walls around the edges */
+        /* 1. Top row */
+        for (double x = 0; x < Common.WINDOW_WIDTH; x += Wall.WALL_WIDTH) {
+            gameController.addWall(new WallModel(x, 0));
+        }
+        /* 2. Bottom row */
+        for (double x = 0; x < Common.WINDOW_WIDTH; x += Wall.WALL_WIDTH) {
+            gameController.addWall(new WallModel(x, Common.WINDOW_HEIGHT - Wall.WALL_HEIGHT));
+        }
+        /* 3. Left column */
+        for (double y = Wall.WALL_HEIGHT; y < Common.WINDOW_HEIGHT - Wall.WALL_HEIGHT; y += Wall.WALL_HEIGHT) {
+            gameController.addWall(new WallModel(0, y));
+        }
+        /* 4. Right column */
+        for (double y = Wall.WALL_HEIGHT; y < Common.WINDOW_HEIGHT - Wall.WALL_HEIGHT; y += Wall.WALL_HEIGHT) {
+            gameController.addWall(new WallModel(Common.WINDOW_WIDTH - Wall.WALL_WIDTH, y));
+        }
+
+        /* Add some obstacles in the middle */
+        gameController.addWall(new WallModel(Common.WINDOW_WIDTH/2 - Wall.WALL_WIDTH, Common.WINDOW_HEIGHT/2));
+        gameController.addWall(new WallModel(Common.WINDOW_WIDTH/2, Common.WINDOW_HEIGHT/2));
+        gameController.addWall(new WallModel(Common.WINDOW_WIDTH/2 + Wall.WALL_WIDTH, Common.WINDOW_HEIGHT/2));
+    }
+
     private void update(double deltaTime) {
         /* TODO: Update game objects */
-        if (wPressed) playerTank.move(deltaTime, "up"); /* Move up */
-        if (sPressed) playerTank.move(deltaTime, "down"); /* Move down */
-        if (aPressed) playerTank.move(deltaTime, "left"); /* Move left */
-        if (dPressed) playerTank.move(deltaTime, "right"); /* Move right */
-        if (qPressed) playerTank.rotate(-45 * deltaTime); /* Rotate left */
-        if (ePressed) playerTank.rotate(45 * deltaTime); /* Rotate right */
-        if (spacePressed) playerTank.shoot(TimeUtil.nanoToSeconds(lastUpdate)); /* Shoot missiles */
+        if (wPressed) gameController.getPlayerTank().move(deltaTime, "up"); /* Move up */
+        if (sPressed) gameController.getPlayerTank().move(deltaTime, "down"); /* Move down */
+        if (aPressed) gameController.getPlayerTank().move(deltaTime, "left"); /* Move left */
+        if (dPressed) gameController.getPlayerTank().move(deltaTime, "right"); /* Move right */
+        if (qPressed) gameController.getPlayerTank().rotate(-45 * deltaTime); /* Rotate left */
+        if (ePressed) gameController.getPlayerTank().rotate(45 * deltaTime); /* Rotate right */
+        if (spacePressed) gameController.getPlayerTank().shoot(TimeUtil.nanoToSeconds(lastUpdate)); /* Shoot missiles */
 
-        playerTank.update(deltaTime);
+        gameController.getPlayerTank().update(deltaTime);
     }
 
     private void render() {
@@ -110,7 +148,10 @@ public class TankWarGame extends Application {
         gc.clearRect(0, 0, Common.WINDOW_WIDTH, Common.WINDOW_HEIGHT);
 
         /* TODO: Render game objects */
-        playerTank.render(gc);
+        /* Render walls */
+        gameController.getWalls().forEach(wall -> wall.render(gc));
+        /* Render player tank */
+        gameController.getPlayerTank().render(gc);
     }
 
     public static void main(String[] args) {

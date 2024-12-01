@@ -4,6 +4,7 @@ import javafx.geometry.Point2D;
 import javafx.scene.canvas.GraphicsContext;
 
 public abstract class GameObjectModel {
+
   /* Basic properties */
   protected Point2D position; /* x and y coordinates */
   protected double width; /* object's dimension */
@@ -55,4 +56,5 @@ public abstract class GameObjectModel {
   public void setActive(boolean active) {
     isActive = active;
   }
+
 }

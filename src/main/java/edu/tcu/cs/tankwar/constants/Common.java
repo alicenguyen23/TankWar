@@ -7,7 +7,7 @@ public final class Common {
   /* Window dimensions */
   public static final double WINDOW_WIDTH = 800.0;
   public static final double WINDOW_HEIGHT = 600.0;
-  public static final double WINDOW_BOTTOM_OFFSET = 50.0;
+  public static final double WINDOW_BOTTOM_OFFSET = Tank.TANK_HEIGHT + Wall.WALL_HEIGHT;
 
   /* Pixel */
   public static final double PIXEL_SIZE = 5;

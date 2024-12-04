@@ -4,6 +4,7 @@ import edu.tcu.cs.tankwar.constants.Common;
 import edu.tcu.cs.tankwar.constants.Tank;
 import edu.tcu.cs.tankwar.constants.Wall;
 import edu.tcu.cs.tankwar.controller.GameController;
+import edu.tcu.cs.tankwar.model.HealthBarModel;
 import edu.tcu.cs.tankwar.model.TankModel;
 import edu.tcu.cs.tankwar.model.WallModel;
 import edu.tcu.cs.tankwar.utils.TimeUtil;
@@ -32,6 +33,8 @@ public class TankWarGame extends Application {
     private boolean spacePressed = false; /* Shoot missiles */
     /* Game controller */
     private GameController gameController = GameController.getInstance();
+    /* Health bar */
+    HealthBarModel healthBar;
 
     @Override
     public void start(Stage stage) {
@@ -41,6 +44,16 @@ public class TankWarGame extends Application {
 
         /* Create a container for the canvas */
         Scene scene = getScene();
+
+        /* Create a tank object at the bottom center of the canvas */
+        TankModel playerTank = new TankModel(Common.WINDOW_WIDTH/2.0, Common.WINDOW_HEIGHT - Common.WINDOW_BOTTOM_OFFSET, true);
+        gameController.setPlayerTank(playerTank);
+
+        /* Initialize walls */
+        gameController.initializeWalls();
+
+        /* Initialize enemies */
+        gameController.initializeEnemies();
 
         /* Game loop (continuously check for any object update) */
         AnimationTimer gameLoop = new AnimationTimer() {
@@ -58,13 +71,6 @@ public class TankWarGame extends Application {
             }
         };
 
-        /* Create a tank object at the bottom center of the canvas */
-        TankModel playerTank = new TankModel(Common.WINDOW_WIDTH/2.0, Common.WINDOW_HEIGHT - Common.WINDOW_BOTTOM_OFFSET, true);
-        gameController.setPlayerTank(playerTank);
-
-        /* Initialize walls */
-        initializeWalls();
-
         /* Set up stage */
         stage.setTitle(Common.TITLE);
         stage.setScene(scene);
@@ -81,14 +87,16 @@ public class TankWarGame extends Application {
 
         /* Key handlers for movement control */
         scene.setOnKeyPressed(e -> {
-            switch (e.getCode()) {
-                case W -> wPressed = true;
-                case S -> sPressed = true;
-                case A -> aPressed = true;
-                case D -> dPressed = true;
-                case Q -> qPressed = true;
-                case E -> ePressed = true;
-                case SPACE -> spacePressed = true;
+            if (!gameController.isGameOver()) {
+                switch (e.getCode()) {
+                    case W -> wPressed = true;
+                    case S -> sPressed = true;
+                    case A -> aPressed = true;
+                    case D -> dPressed = true;
+                    case Q -> qPressed = true;
+                    case E -> ePressed = true;
+                    case SPACE -> spacePressed = true;
+                }
             }
         });
         scene.setOnKeyReleased(e -> {
@@ -105,33 +113,7 @@ public class TankWarGame extends Application {
         return scene;
     }
 
-    private void initializeWalls() {
-        /* Create walls around the edges */
-        /* 1. Top row */
-        for (double x = 0; x < Common.WINDOW_WIDTH; x += Wall.WALL_WIDTH) {
-            gameController.addWall(new WallModel(x, 0));
-        }
-        /* 2. Bottom row */
-        for (double x = 0; x < Common.WINDOW_WIDTH; x += Wall.WALL_WIDTH) {
-            gameController.addWall(new WallModel(x, Common.WINDOW_HEIGHT - Wall.WALL_HEIGHT));
-        }
-        /* 3. Left column */
-        for (double y = Wall.WALL_HEIGHT; y < Common.WINDOW_HEIGHT - Wall.WALL_HEIGHT; y += Wall.WALL_HEIGHT) {
-            gameController.addWall(new WallModel(0, y));
-        }
-        /* 4. Right column */
-        for (double y = Wall.WALL_HEIGHT; y < Common.WINDOW_HEIGHT - Wall.WALL_HEIGHT; y += Wall.WALL_HEIGHT) {
-            gameController.addWall(new WallModel(Common.WINDOW_WIDTH - Wall.WALL_WIDTH, y));
-        }
-
-        /* Add some obstacles in the middle */
-        gameController.addWall(new WallModel(Common.WINDOW_WIDTH/2 - Wall.WALL_WIDTH, Common.WINDOW_HEIGHT/2));
-        gameController.addWall(new WallModel(Common.WINDOW_WIDTH/2, Common.WINDOW_HEIGHT/2));
-        gameController.addWall(new WallModel(Common.WINDOW_WIDTH/2 + Wall.WALL_WIDTH, Common.WINDOW_HEIGHT/2));
-    }
-
     private void update(double deltaTime) {
-        /* TODO: Update game objects */
         if (wPressed) gameController.getPlayerTank().move(deltaTime, "up"); /* Move up */
         if (sPressed) gameController.getPlayerTank().move(deltaTime, "down"); /* Move down */
         if (aPressed) gameController.getPlayerTank().move(deltaTime, "left"); /* Move left */
@@ -140,18 +122,37 @@ public class TankWarGame extends Application {
         if (ePressed) gameController.getPlayerTank().rotate(45 * deltaTime); /* Rotate right */
         if (spacePressed) gameController.getPlayerTank().shoot(TimeUtil.nanoToSeconds(lastUpdate)); /* Shoot missiles */
 
-        gameController.getPlayerTank().update(deltaTime);
+        if (gameController.getPlayerTank() != null) {
+            gameController.updatePlayer(deltaTime);
+            gameController.updateEnemies(deltaTime);
+            gameController.updateExplosion(deltaTime);
+            gameController.updateMedPacks(deltaTime);
+        }
     }
 
     private void render() {
         /* Clear the canvas */
         gc.clearRect(0, 0, Common.WINDOW_WIDTH, Common.WINDOW_HEIGHT);
 
-        /* TODO: Render game objects */
         /* Render walls */
-        gameController.getWalls().forEach(wall -> wall.render(gc));
+        gameController.renderWalls(gc);
         /* Render player tank */
-        gameController.getPlayerTank().render(gc);
+        if (gameController.getPlayerTank() != null) {
+            gameController.getPlayerTank().render(gc);
+            healthBar = new HealthBarModel(gameController.getPlayerTank());
+            healthBar.render(gc);
+        }
+        /* Render enemies */
+        gameController.renderEnemies(gc);
+        /* Render explosions */
+        gameController.renderExplosions(gc);
+        /* Render medpacks */
+        gameController.renderMedPacks(gc);
+        /* Render game over state */
+        if (gameController.isGameOver()) {
+            gameController.renderGameOver(gc);
+            gameController.reset();
+        }
     }
 
     public static void main(String[] args) {

@@ -3,12 +3,10 @@ package edu.tcu.cs.tankwar.model;
 import edu.tcu.cs.tankwar.constants.Common;
 import edu.tcu.cs.tankwar.constants.Missile;
 import edu.tcu.cs.tankwar.constants.Tank;
-import edu.tcu.cs.tankwar.controller.GameController;
 import edu.tcu.cs.tankwar.render.TankRender;
 import edu.tcu.cs.tankwar.utils.CollisionUtil;
 import edu.tcu.cs.tankwar.utils.ImageUtil;
 import javafx.geometry.Point2D;
-import javafx.geometry.Rectangle2D;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
 
@@ -18,20 +16,22 @@ import java.util.List;
 public class TankModel extends GameObjectModel {
 
   private final Image tankImage;
-  private final double speed = Tank.TANK_SPEED;
+  private double speed;
   private double rotation = Tank.TANK_ROTATION;
   private int health = Tank.TANK_MAX_HEALTH;
   private List<MissileModel> missiles = new ArrayList<>();
+  private boolean isPlayer;
   private double lastShotTime = 0;
 
   public TankModel(double x, double y, boolean isPlayer) {
     super(x, y, Tank.TANK_WIDTH, Tank.TANK_HEIGHT);
     this.tankImage = isPlayer ? ImageUtil.PLAYER_TANK : ImageUtil.ENEMY_TANK;
+    this.speed = isPlayer ? Tank.TANK_SPEED : Tank.ENEMY_SPEED;
+    this.isPlayer = isPlayer;
   }
 
   @Override
   public void update(double deltaTime) {
-    /* TODO: Handle movement */
     /* Update missiles movement */
     missiles.removeIf(missile -> !missile.isActive());
     missiles.forEach(missile -> missile.update(deltaTime));
@@ -51,16 +51,16 @@ public class TankModel extends GameObjectModel {
     /* Calculate displacement based on the direction */
     switch (direction.toLowerCase()) {
       case "up":
-        dy = -Tank.TANK_SPEED * deltaTime;
+        dy = -speed * deltaTime;
         break;
       case "down":
-        dy = Tank.TANK_SPEED * deltaTime;
+        dy = speed * deltaTime;
         break;
       case "left":
-        dx = -Tank.TANK_SPEED * deltaTime;
+        dx = -speed * deltaTime;
         break;
       case "right":
-        dx = Tank.TANK_SPEED * deltaTime;
+        dx = speed * deltaTime;
         break;
     }
 
@@ -88,17 +88,21 @@ public class TankModel extends GameObjectModel {
   /* Shooting method */
   public void shoot(double currentTime) {
     /* If no longer in cooldown time */
-    if (currentTime - lastShotTime > Missile.SHOT_COOLDOWN) {
+    double shootingCooldown = isPlayer ? Missile.PLAYER_COOLDOWN : Missile.ENEMY_COOLDOWN;
+    if (currentTime - lastShotTime > shootingCooldown) {
       /* Calculate position to spawn missile (taking rotation angle into consideration) */
       double centerX = position.getX() + width/2;
       double centerY = position.getY() + height/2;
 
-      double rad = Math.toRadians(rotation - Missile.ROTATION_OFFSET);
+      double adjustedRotation = isPlayer ?
+              rotation - Missile.ROTATION_OFFSET :
+              rotation + Missile.ROTATION_OFFSET;
+      double rad = Math.toRadians(adjustedRotation);
       double xPosition = centerX + Math.cos(rad) * Tank.CANNON_LENGTH - Missile.MISSILE_WIDTH/2;
       double yPosition = centerY + Math.sin(rad) * Tank.CANNON_LENGTH - Missile.MISSILE_HEIGHT/2;
 
       /* Generate a missile */
-      MissileModel missile = new MissileModel(xPosition, yPosition, rotation);
+      MissileModel missile = new MissileModel(xPosition, yPosition, rotation, isPlayer);
       missiles.add(missile);
       lastShotTime = currentTime;
     }
@@ -118,18 +122,28 @@ public class TankModel extends GameObjectModel {
     return health;
   }
 
-  public void damage(int dmgAmount) {
-    health -= dmgAmount;
-    if (health < Tank.TANK_MIN_HEALTH) health = Tank.TANK_MIN_HEALTH;
+  public void setHealth(int health) {
+    this.health = health;
   }
 
-  public void heal(int healAmount) {
-    health += healAmount;
-    if (health > Tank.TANK_MAX_HEALTH) health = Tank.TANK_MAX_HEALTH;
+  public void damage(int dmgAmount) {
+    health -= dmgAmount;
+    if (health <= Tank.TANK_MIN_HEALTH) {
+      health = Tank.TANK_MIN_HEALTH;
+      isActive = false;
+    }
   }
 
   public double getRotation() {
     return rotation;
+  }
+
+  public void setRotation(double rotation) {
+    this.rotation = rotation;
+  }
+
+  public List<MissileModel> getMissiles() {
+    return missiles;
   }
 
 }

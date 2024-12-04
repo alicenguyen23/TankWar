@@ -13,7 +13,12 @@ public class MissileRender {
     /* Save current state */
     gc.save();
     gc.translate(missile.getPosition().getX() + missile.getWidth()/2, missile.getPosition().getY() + missile.getHeight()/2);
-    gc.rotate(missile.getRotation());
+
+    double imageRotation = missile.getRotation();
+    if (!missile.isPlayerMissile()) {
+      imageRotation += 180;
+    }
+    gc.rotate(imageRotation);
 
     /* Implement Missile UI */
     gc.drawImage(MissileModel.getMissileImage(), -missile.getWidth()/2, -missile.getHeight()/2, missile.getWidth(), missile.getHeight());

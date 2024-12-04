@@ -18,10 +18,12 @@ public class MissileModel extends GameObjectModel {
   private final double rotation;
   private final double speed = Missile.MISSILE_SPEED;
   private boolean active = true;
+  private final boolean isPlayerMissile;
 
-  public MissileModel(double x, double y, double rotation) {
-    super(x,y, Missile.MISSILE_WIDTH, Missile.MISSILE_HEIGHT);
+  public MissileModel(double x, double y, double rotation, boolean isPlayerMissile) {
+    super(x, y, Missile.MISSILE_WIDTH, Missile.MISSILE_HEIGHT);
     this.rotation = rotation;
+    this.isPlayerMissile = isPlayerMissile;
   }
 
   @Override
@@ -29,7 +31,9 @@ public class MissileModel extends GameObjectModel {
     if (!active) return;
 
     /* Missile movement based on rotation */
-    double adjustedRotation = rotation - Missile.ROTATION_OFFSET;
+    double adjustedRotation = isPlayerMissile ?
+            rotation - Missile.ROTATION_OFFSET :
+            rotation + Missile.ROTATION_OFFSET;
     double rad = Math.toRadians(adjustedRotation);
     double dx = Math.cos(rad) * speed * deltaTime;
     double dy = Math.sin(rad) * speed * deltaTime;
@@ -82,6 +86,10 @@ public class MissileModel extends GameObjectModel {
 
   public static Image getMissileImage() {
     return missileImage;
+  }
+
+  public boolean isPlayerMissile() {
+    return isPlayerMissile;
   }
 
 }

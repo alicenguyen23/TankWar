@@ -9,8 +9,10 @@ public final class Common {
   public static final double WINDOW_HEIGHT = 600.0;
   public static final double WINDOW_BOTTOM_OFFSET = Tank.TANK_HEIGHT + Wall.WALL_HEIGHT;
 
-  /* Pixel */
-  public static final double PIXEL_SIZE = 5;
+  /* State related constants */
+  public static final double CHASE_RANGE = 400;
+  public static final double ATTACK_RANGE = 200;
+  public static final double LOW_HEALTH = 20;
 
   private Common() {
     throw new UnsupportedOperationException("Constants class cannot be instantiated");
